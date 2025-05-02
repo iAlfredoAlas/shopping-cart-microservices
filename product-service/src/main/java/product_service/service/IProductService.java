@@ -9,6 +9,7 @@ public interface IProductService {
 
     List<ProductDTO> getAllProducts(Pageable pageable);
     ProductDTO getProductById(Long id);
+    ProductDTO updateProduct(Long id, ProductDTO productDto);
     ProductDTO createProduct(ProductDTO productDto);
     void deleteProduct(Long id);
 

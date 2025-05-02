@@ -1,10 +1,7 @@
 package product_service.service;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -43,6 +40,23 @@ public class ProductServiceImpl implements IProductService {
         } catch (HttpClientErrorException.NotFound e) {
             throw new RuntimeException("Product with ID " + id + " not found");
         }
+    }
+
+    @Override
+    public ProductDTO updateProduct(Long id, ProductDTO productDto) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<ProductDTO> request = new HttpEntity<>(productDto, headers);
+
+        ResponseEntity<ProductDTO> response = restTemplate.exchange(
+                API_URL + "/" + id,
+                HttpMethod.PUT,
+                request,
+                ProductDTO.class
+        );
+
+        return response.getBody();
     }
 
     @Override
