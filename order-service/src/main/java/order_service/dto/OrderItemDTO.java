@@ -13,4 +13,8 @@ public class OrderItemDTO {
     @Min(value = 1, message = "Quantity must be at least 1")
     private int quantity;
 
+    private ProductResponseDTO product;
+
+    private double subtotal;
+
 }

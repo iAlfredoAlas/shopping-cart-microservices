@@ -15,4 +15,6 @@ public class OrderDTO {
     @NotEmpty(message = "Order must contain at least one item")
     private List<OrderItemDTO> items;
 
+    private double totalAmount;
+
 }
