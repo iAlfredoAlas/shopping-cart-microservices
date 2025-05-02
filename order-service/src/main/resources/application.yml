@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: order-service
+server:
+  port: 8082
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*" # Shows all Actuator endpoints
+  endpoint:
+    health:
+      show-details: always # Shows details of health status
