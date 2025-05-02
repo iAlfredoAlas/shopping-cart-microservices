@@ -9,6 +9,8 @@ import java.util.List;
 @Data
 public class OrderDTO {
 
+    private Long id;
+
     @NotNull(message = "Customer ID is required")
     private Long customerId;
 

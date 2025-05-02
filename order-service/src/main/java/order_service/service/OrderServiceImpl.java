@@ -11,14 +11,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
-public class OrderServiceImpl implements IOrderService{
+public class OrderServiceImpl implements IOrderService {
 
     private final RestTemplate restTemplate;
 
     @Value("${product.service.url}")
     private String productServiceUrl;
+
+    private final Map<Long, OrderDTO> orders = new ConcurrentHashMap<>();
+    private final AtomicLong idGenerator = new AtomicLong(1);
 
     public OrderServiceImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -43,7 +48,6 @@ public class OrderServiceImpl implements IOrderService{
                 String title = productData.get("title").toString();
                 double subtotal = price * item.getQuantity();
 
-                // Set product details in new DTO
                 ProductResponseDTO product = new ProductResponseDTO();
                 product.setId(item.getProductId());
                 product.setTitle(title);
@@ -59,8 +63,21 @@ public class OrderServiceImpl implements IOrderService{
             }
         }
 
+        Long orderId = idGenerator.getAndIncrement();
+        orderDTO.setId(orderId);
         orderDTO.setTotalAmount(total);
+
+        orders.put(orderId, orderDTO);
+
         return orderDTO;
     }
 
+    @Override
+    public OrderDTO getOrderById(Long id) {
+        OrderDTO order = orders.get(id);
+        if (order == null) {
+            throw new ResourceNotFoundException("Order with ID " + id + " not found");
+        }
+        return order;
+    }
 }
