@@ -12,3 +12,7 @@ management:
   endpoint:
     health:
       show-details: always # Shows details of health status
+
+product:
+  service:
+    url: http://localhost:8081/api/products
