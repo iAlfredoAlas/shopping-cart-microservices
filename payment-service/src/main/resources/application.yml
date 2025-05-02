@@ -12,6 +12,18 @@ management:
   endpoint:
     health:
       show-details: always # Shows details of health status
+    info:
+      access: read_only
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: Payment Service
+    description: Microservice for simulating order payments and validating customer and amount
+    version: 1.0.0
+    developer: Alfredo Alas
 
 order:
   service:
