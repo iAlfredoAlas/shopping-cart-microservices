@@ -1,5 +1,6 @@
 package product_service.service;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -19,9 +20,20 @@ public class ProductServiceImpl implements IProductService {
     private static final String API_URL = "https://fakestoreapi.com/products";
 
     @Override
-    public List<ProductDTO> getAllProducts() {
+    public List<ProductDTO> getAllProducts(Pageable pageable) {
         ResponseEntity<ProductDTO[]> response = restTemplate.getForEntity(API_URL, ProductDTO[].class);
-        return Arrays.asList(response.getBody());
+        List<ProductDTO> allProducts = Arrays.asList(response.getBody());
+
+        int page = pageable.getPageNumber();
+        int size = pageable.getPageSize();
+        int start = page * size;
+        int end = Math.min(start + size, allProducts.size());
+
+        if (start > allProducts.size()) {
+            return List.of();
+        }
+
+        return allProducts.subList(start, end);
     }
 
     @Override
