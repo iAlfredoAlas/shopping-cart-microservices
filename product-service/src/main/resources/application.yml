@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: product-service
+server:
+  port: 8081
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*" # Shows all Actuator endpoints
+  endpoint:
+    health:
+      show-details: always # Shows details of health status
+    info:
+      access: read_only
+  info:
+      env:
+        enabled: true
+
+info:
+  app:
+    name: Product Service
+    description: Proxy microservice for external product API (FakeStore)
+    version: 1.0.0
+    developer: Alfredo Alas

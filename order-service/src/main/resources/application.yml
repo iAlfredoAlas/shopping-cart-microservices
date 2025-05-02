@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: order-service
+server:
+  port: 8082
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*" # Shows all Actuator endpoints
+  endpoint:
+    health:
+      show-details: always # Shows details of health status
+    info:
+      access: read_only
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: Order Service
+    description: Microservice for handling customer orders and calculating totals
+    version: 1.0.0
+    developer: Alfredo Alas
+
+product:
+  service:
+    url: http://localhost:8081/api/products
