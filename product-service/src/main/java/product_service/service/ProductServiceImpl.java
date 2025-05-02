@@ -1,0 +1,53 @@
+package product_service.service;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+import product_service.dto.ProductDTO;
+
+import java.util.Arrays;
+import java.util.List;
+
+@Service
+public class ProductServiceImpl implements IProductService {
+
+    private final RestTemplate restTemplate = new RestTemplate();
+    private static final String API_URL = "https://fakestoreapi.com/products";
+
+    @Override
+    public List<ProductDTO> getAllProducts() {
+        ResponseEntity<ProductDTO[]> response = restTemplate.getForEntity(API_URL, ProductDTO[].class);
+        return Arrays.asList(response.getBody());
+    }
+
+    @Override
+    public ProductDTO getProductById(Long id) {
+        try {
+            return restTemplate.getForObject(API_URL + "/" + id, ProductDTO.class);
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new RuntimeException("Product with ID " + id + " not found");
+        }
+    }
+
+    @Override
+    public ProductDTO createProduct(ProductDTO productDto) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<ProductDTO> request = new HttpEntity<>(productDto, headers);
+        return restTemplate.postForObject(API_URL, request, ProductDTO.class);
+    }
+
+    @Override
+    public void deleteProduct(Long id) {
+        try {
+            restTemplate.delete(API_URL + "/" + id);
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new RuntimeException("Product with ID " + id + " not found");
+        }
+    }
+}
