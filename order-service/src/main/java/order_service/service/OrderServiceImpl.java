@@ -2,6 +2,7 @@ package order_service.service;
 
 
 import order_service.dto.OrderDTO;
+import order_service.dto.OrderDetailDTO;
 import order_service.dto.OrderItemDTO;
 import order_service.dto.ProductResponseDTO;
 import order_service.exception.ResourceNotFoundException;
@@ -10,6 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -32,30 +37,33 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     public OrderDTO createOrder(OrderDTO orderDTO) {
         double total = 0.0;
+        List<OrderDetailDTO> details = new ArrayList<>();
 
         for (OrderItemDTO item : orderDTO.getItems()) {
             try {
                 String url = productServiceUrl + "/" + item.getProductId();
-                ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+                ResponseEntity<ProductResponseDTO> response =
+                        restTemplate.getForEntity(url, ProductResponseDTO.class);
 
-                if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-                    throw new ResourceNotFoundException("Product with ID " + item.getProductId() + " not found");
+                ProductResponseDTO product = response.getBody();
+
+                if (product == null || product.getTitle() == null || product.getPrice() <= 0) {
+                    throw new ResourceNotFoundException("Invalid product data for ID " + item.getProductId());
                 }
 
-                Map<String, Object> productData = response.getBody();
-
-                double price = Double.parseDouble(productData.get("price").toString());
-                String title = productData.get("title").toString();
-                double subtotal = price * item.getQuantity();
-
-                ProductResponseDTO product = new ProductResponseDTO();
-                product.setId(item.getProductId());
-                product.setTitle(title);
-                product.setPrice(price);
+                double subtotal = product.getPrice() * item.getQuantity();
 
                 item.setProduct(product);
                 item.setSubtotal(subtotal);
 
+                OrderDetailDTO detail = new OrderDetailDTO();
+                detail.setProductId(product.getId());
+                detail.setProductName(product.getTitle());
+                detail.setPrice(product.getPrice());
+                detail.setQuantity(item.getQuantity());
+                detail.setSubtotal(subtotal);
+
+                details.add(detail);
                 total += subtotal;
 
             } catch (Exception e) {
@@ -65,7 +73,10 @@ public class OrderServiceImpl implements IOrderService {
 
         Long orderId = idGenerator.getAndIncrement();
         orderDTO.setId(orderId);
-        orderDTO.setTotalAmount(total);
+        orderDTO.setDetails(details);
+
+        BigDecimal roundedTotal = BigDecimal.valueOf(total).setScale(2, RoundingMode.HALF_UP);
+        orderDTO.setTotalAmount(roundedTotal.doubleValue());
 
         orders.put(orderId, orderDTO);
 
